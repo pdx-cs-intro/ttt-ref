@@ -26,12 +26,12 @@ board = [
 # Whose turn is it? 0 for first player, 1 for second.
 on_move = 0
 
+# Display the board in standard format.
 def print_board():
     for row in board:
         print(''.join(row))
 
-# Return the number of the opponent of
-# Player n (0-based).
+# Return the number of the opponent of Player n (0-based).
 def opponent(n):
     if n == 0:
         return 1
@@ -60,9 +60,56 @@ def make_move(move, side):
 
 # Return "win", "draw" or "continue"
 # depending on the current board state.
-def game_over(side):
-    # XXX Finish this function.
-    return "continue"
+# Strategy: To check for a win, check for "lines" in the
+# input that are all the given side's piece. To check for a
+# draw, check if the board is full and no win.
+def game_over(board, side):
+    # Row wins.
+    for r in range(3):
+        if board[r][0] == side and board[r][1] == side and board[r][2] == side:
+            return "win"
+    # Column wins.
+    for c in range(3):
+        if board[0][c] == side and board[1][c] == side and board[2][c] == side:
+            return "win"
+    # Diagonal wins.
+    if board[0][0] == side and board[1][1] == side and board[2][2] == side:
+        return "win"
+    if board[0][2] == side and board[1][1] == side and board[2][0] == side:
+        return "win"
+
+    # Not a draw.
+    for r in range(3):
+        for c in range(3):
+            if board[r][c].isdigit():
+                return "continue"
+
+    # Must be a draw.
+    return "draw"
+
+empty_board = [
+    ['1', '2', '3'],
+    ['4', '5', '6'],
+    ['7', '8', '9'],
+]
+assert game_over(empty_board, 'X') == "continue"
+assert game_over(empty_board, 'O') == "continue"
+
+draw_board = [
+    ['X', 'X', 'O'],
+    ['O', 'X', 'X'],
+    ['X', 'O', 'O'],
+]
+assert game_over(draw_board, 'X') == "draw"
+assert game_over(draw_board, 'O') == "draw"
+
+win_board = [
+    ['X', '2', 'O'],
+    ['O', 'X', '5'],
+    ['X', 'O', 'X'],
+]
+assert game_over(win_board, 'X') == "win"
+assert game_over(win_board, 'O') == "continue"
 
 # Process moves until game over.
 while True:
@@ -75,8 +122,9 @@ while True:
         print(f"Illegal move, {name}.")
         print(f"{opponent_name} wins!")
         break
-    result = game_over(current_player.side)
+    result = game_over(board, current_player.side)
     if result != "continue":
+        print_board()
         if result == "win":
             print(f"{name} wins!")
         elif result == "draw":
